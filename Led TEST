@@ -1,0 +1,28 @@
+
+
+const int myPins[6] = {14, 27, 26, 25, 33, 32};
+
+void setup() {
+for(int i = 0; i < 6; i++) pinMode(myPins[i],OUTPUT);
+}
+
+void Steuerung(int Anzahl){
+  for(int i = 0; i < Anzahl; i++){
+    digitalWrite(myPins[i],HIGH);
+  }
+  delay(500);
+  for(int i = 0; i < Anzahl; i++){
+    digitalWrite(myPins[i],LOW);
+  }
+  delay(500);
+}
+
+
+void loop() {
+int Anzahl = 1;  
+for(int x = 0; x < 6; x++){
+  Steuerung(Anzahl);
+  Anzahl++;
+}
+
+}
