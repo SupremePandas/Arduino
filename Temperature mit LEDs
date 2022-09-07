@@ -1,0 +1,82 @@
+include <OneWire.h>
+#include <DallasTemperature.h>
+
+#define Mtwled 14 // LED für Zusatzaufgabe 1
+
+int Temperaturled[3] = {32 , 33, 25}; // LEDs für Zusatzaufgabe 2
+float Temperatur[3] = {26, 28 , 30}; // Die Temperaturen wann die Leds angemacht werden soll, man kann sie hier beliebig verändern.
+
+const int oneWireBus = 4;
+OneWire oneWire(oneWireBus);
+DallasTemperature sensors(&oneWire);
+
+
+
+void setup() {
+Serial.begin(115200);
+sensors.begin();
+
+pinMode(Mtwled,OUTPUT);
+for(int i = 0; i < 3; i++) pinMode(Temperaturled[i],OUTPUT);
+}
+
+//------------------------------Zusatz 1 -----------------------------------------------------//
+void zusatzaufgabe1(float mtwcelsius){
+if(mtwcelsius < 27){
+digitalWrite(Mtwled,LOW);
+Serial.println("Der Höchst Mittelwert wurde nicht ereicht, die Lampe ist aus");
+}
+if(mtwcelsius > 27){
+digitalWrite(Mtwled,HIGH);
+Serial.println("Der Höchst Mittelwert wurde ereicht, die Lampe ist an");
+}
+}
+
+//------------------------------Zusatz 2 -----------------------------------------------------//
+void ZusatzAufgabe2(float* Temperatur,int* Temperaturled, float temperatureC,int AnzahlvonLed){
+  for(int i = 0;i < AnzahlvonLed; i++){
+    if(temperatureC > Temperatur[i])digitalWrite(Temperaturled[i],HIGH);
+    if(temperatureC < Temperatur[i])digitalWrite(Temperaturled[i],LOW);
+  }
+
+}
+//--------------------------------------------------------------------------------------------//
+void loop() {
+  
+// Aufgabe 1 für Mittelwert, wird auf 0 anfangs gesetzt
+float Summecelsius = 0; 
+float Summefarenheit = 0;
+
+for(int i = 0; i < 10; i++){
+
+  sensors.requestTemperatures();
+  float temperatureC = sensors.getTempCByIndex(0);
+  float temperatureF = sensors.getTempFByIndex(0);
+  Serial.print(temperatureC);
+  Serial.println("ºC");
+  Serial.print(temperatureF);
+  Serial.println("ºF");
+
+    Summecelsius += temperatureC;
+    Summefarenheit += temperatureF;
+  
+  //------- Zusatz 2 -------
+   ZusatzAufgabe2(Temperatur,Temperaturled,temperatureC, 3);
+
+  delay(2000);
+}
+  // Mittelwert für celsius und fahrenheit berechnen und Ausgabe
+  float mtwcelsius = Summecelsius / 10;
+  float mtwfahrenheit = Summefarenheit / 10;
+  
+    Serial.println(" ");
+    Serial.print(mtwcelsius);
+    Serial.println("ºC ist der Mittelwert");
+    Serial.print(mtwfahrenheit);
+    Serial.println("ºF ist der Mittelwert");
+    Serial.println(" ");
+
+//------- Zusatz 1 -------
+zusatzaufgabe1(mtwcelsius);
+
+}
