@@ -1,0 +1,137 @@
+/*
+* Datum 07.09.2022
+* Autor; Andrej
+* Klasse: I12-F1
+* Hardware:Temperautr, Led, Wiederstand
+* Funktion: Temperaturmessung mit Led
+* 
+* - Ausgabe von x Temperaturen und dann denn Mittelwert von den x Temperaturen (loop)
+* - Gesammt Mittelwert von allen sensoren berechnen und Ausgeben (1 Led bei bestimmter Temp. an) 
+* - x lampen leuchten bei bestimmten Temperaturen(MTW von allen Sensoren einzelen)
+*/
+
+
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#define Mtwled 14 // LED für Zusatzaufgabe 1
+
+const int oneWireBus = 4; // Datenkabel wird an Pin 4 angeschlossen
+OneWire oneWire(oneWireBus); // einrichtung von einer OneWire-Instanz, um mit beliebigen OneWire-Geräten zu kommunizieren
+DallasTemperature sensors(&oneWire); // Übergeben von OneWire-Referenz an Dallas Temperature
+
+//----------------------------------------Einstellungen--------------------------------------------------------------------------------------------------------------------//
+    int Temperaturled[3] = {32 , 33, 25}; // LEDs für Zusatzaufgabe 2
+    float Temperatur[3] = {20, 23 , 26};  // Die Temperaturen wann die Leds angemacht werden soll, man kann sie hier beliebig verändern.(Zusatz 2)
+    int AnzahlvonSensoren = 1;            // Wie viele Sensoren vorhanden sind, können auch 4,5 usw. oder nur 1
+    int GesammtMTWTemperaturLed = 22;     // Wann die MTW Temperatur angehen soll. (Zusatz 1)
+    int AnzahlvonLeds = 3;                // Hier kann man beliebig viele LEDs einstellen natürlich muss man aber im array templed auch mehr/weniger Einstellen. (Zusatz 2)
+    int Wiederholungen = 10;               // Wie oft die Led ausgelesen werden sollen bis MTW
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+//----------------------------------------Setup-----------------------------------------------//
+void setup() {
+Serial.begin(115200);
+sensors.begin(); //Starten der library
+
+pinMode(Mtwled,OUTPUT);
+for(int i = 0; i < AnzahlvonLeds; i++) pinMode(Temperaturled[i],OUTPUT);
+}
+
+//------------------------------Zusatz 1 -----------------------------------------------------//
+void zusatzaufgabe1(int GesammtMTWTemperaturLed,float Gesammtsummecelsius,int AnzahlvonSensoren, int Wiederholungen){
+  
+    float GesammtMTW = Gesammtsummecelsius / (AnzahlvonSensoren * Wiederholungen); 
+      
+    Serial.println("Das ist der Gesammtmittelwert");
+    Serial.print(GesammtMTW);
+    Serial.println("ºC");
+  
+  if(GesammtMTW < GesammtMTWTemperaturLed){
+    digitalWrite(Mtwled,LOW);
+    Serial.println("Der Höchst Mittelwert wurde nicht ereicht, die Lampe ist aus");
+    }
+  if(GesammtMTW > GesammtMTWTemperaturLed){
+    digitalWrite(Mtwled,HIGH);
+    Serial.println("Der Höchst Mittelwert wurde ereicht, die Lampe ist an");
+    }
+}
+
+//------------------------------Zusatz 2 -----------------------------------------------------//
+void ZusatzAufgabe2(float* Temperatur,int* Temperaturled, float TemperaturMTW,int AnzahlvonLed,int AnzahlvonSensoren){
+  
+  float TempMTW = TemperaturMTW / AnzahlvonSensoren;
+  
+  for(int i = 0; i < AnzahlvonLed; i++){ 
+    if(TempMTW > Temperatur[i])digitalWrite(Temperaturled[i],HIGH);
+    if(TempMTW < Temperatur[i])digitalWrite(Temperaturled[i],LOW);
+  }
+
+}
+//-------------------------------MTWvonSensorenAusgabe------------------------------------------------------------//
+void MTWvonNSensoren(int AnzahlvonSensoren,float* Temperatursummecelsius,float* Temperatursummefahrenheit, int Wiederholungen){
+  
+  for (int IC = 0; IC < AnzahlvonSensoren; IC++){
+    
+    float mtwcelsius = 0; // zurücksetzung
+    float mtwfahrenheit = 0; // zurücksetzung
+    //Berechnung von dem Mittelwert
+    mtwcelsius = Temperatursummecelsius[IC] / Wiederholungen;
+    mtwfahrenheit = Temperatursummefahrenheit[IC] / Wiederholungen;
+    //Ausgabe
+    Serial.print(IC+1);
+    Serial.println(". Sensor Mittelwert");
+    Serial.print(mtwcelsius);
+    Serial.println("ºC ist der Mittelwert");
+    Serial.print(mtwfahrenheit);
+    Serial.println("ºF ist der Mittelwert");
+    Serial.println(" ");
+    delay(50);
+}
+}
+
+
+void loop() {
+  
+float Gesammtsummecelsius = 0;                      // zurücksetzung von der Gesammtsumme
+float Temperatursummecelsius[AnzahlvonSensoren];    // hier werden die Gessammtsummen der Einzelnen sensoren gespeichert (celsius)
+float Temperatursummefahrenheit[AnzahlvonSensoren]; // hier werden die Gessammtsummen der Einzelnen sensoren gespeichert (fahrenheit)
+
+
+ for(int i = 0; i < Wiederholungen; i++){
+  
+ float TemperaturMTW = 0;
+  
+  for(int IC = 0; IC < AnzahlvonSensoren; IC++){  // für die Integrierten Schaltkreise
+    sensors.requestTemperatures();
+
+    // hollt sich die temperatur raus vom index i bezieht sich auf den IC(Integrierter Schaltkreis)auf dem Draht  
+    float temperatureC = sensors.getTempCByIndex(IC);  
+    float temperatureF = sensors.getTempFByIndex(IC);
+    
+    //Ausgabe
+    Serial.print(IC+1);
+    Serial.println(". Sensor");
+    Serial.print(temperatureC);
+    Serial.println("ºC");
+    Serial.print(temperatureF);
+    Serial.println("ºF");
+    
+      Gesammtsummecelsius += temperatureC;  // wird anfang loop auf 0 gesetzt
+      TemperaturMTW += temperatureC;        // wird in der for schleife wieder auf 0 gesetzt
+      
+      Temperatursummecelsius[IC] += temperatureC;    // Summe von x mal Wiederholungen (celsius)
+      Temperatursummefahrenheit[IC] += temperatureF; // Summe von x mal Wiederholungen (fahrenheit)
+   
+ }
+ //------- Zusatz 2 ---------//
+ ZusatzAufgabe2(Temperatur,Temperaturled,TemperaturMTW, AnzahlvonLeds,AnzahlvonSensoren);
+  delay(2000); // warte 2s
+}
+//------- Zusatz mtw -------//
+  MTWvonNSensoren(AnzahlvonSensoren,Temperatursummecelsius,Temperatursummefahrenheit,Wiederholungen);
+  
+//------- Zusatz 1 ---------//
+  zusatzaufgabe1(GesammtMTWTemperaturLed,Gesammtsummecelsius,AnzahlvonSensoren,Wiederholungen);
+
+memset(Temperatursummecelsius, 0, sizeof(Temperatursummecelsius));        // zurücksetzung von der Gesammtsumme in den arrays
+memset(Temperatursummefahrenheit, 0, sizeof(Temperatursummefahrenheit));  // zurücksetzung von der Gesammtsumme in den arrays 
+}
