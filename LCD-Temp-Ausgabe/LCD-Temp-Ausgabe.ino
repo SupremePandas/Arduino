@@ -31,9 +31,9 @@ void Temperaturausgabe(){
   sensors.requestTemperatures();                   // Anfrage an alle Geräte am Bus
   float temperatureC = sensors.getTempCByIndex(0); // nimmt vom ic 0 die Temp.
  
-  lcd.setCursor(10,0);     // Ausgabe an der 10. Spalte und 1. Zeile
+  lcd.setCursor(9,0);      // Ausgabe an der 10. Spalte und 1. Zeile
   lcd.print(temperatureC); // Ausgabe von der Temp.
-  lcd.print("C");          
+  lcd.print("\337C");          
   
   delay(1000); // verzögerung
 }
