@@ -39,7 +39,6 @@ void Temperaturausgabe(){
 }
 //-------------------------------------------------------------------------------------------------------------------//
 void setup() {
-  Serial.begin(115200);
   sensors.begin();
   startlcd(HintergrundBeleuchtung);
   lcd.print("Celsius:"); // Text Ausgabe
