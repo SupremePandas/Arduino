@@ -1,0 +1,31 @@
+/*
+* Datum 07.09.2022
+* Autor; Andrej
+* Klasse: I12-F1
+* Funktion: Temperaturmessung und ausgabe Terminal App
+*/
+
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include "BluetoothSerial.h"
+
+BluetoothSerial SerialBT;
+const int oneWireBus = 33;
+OneWire oneWire(oneWireBus);
+DallasTemperature sensors(&oneWire);
+//--------------------------------------------------------------------------------------------//
+void setup() {
+Serial.begin(115200);
+SerialBT.begin("Andrej ESP32");
+sensors.begin();
+}
+
+//--------------------------------------------------------------------------------------------//
+void loop() {
+  sensors.requestTemperatures();
+  float tempC = sensors.getTempCByIndex(0);
+  String temperatureString = String(sensors.getTempCByIndex(0)) + "ºC";
+  Serial.println(temperatureString);
+  SerialBT.println(temperatureString); 
+  delay(2000);
+}
