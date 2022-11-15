@@ -1,0 +1,165 @@
+// NodeMCU32s
+#include <LiquidCrystal.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include "BluetoothSerial.h"
+
+#define LDR 34
+#define Taster 23
+#define HintergrundBeleuchtung 32
+#define oneWireBus 33
+#define LDR 34
+
+BluetoothSerial SerialBT;
+OneWire oneWire(oneWireBus);
+DallasTemperature sensors(&oneWire);
+LiquidCrystal lcd(13, 12, 27, 14, 26, 25);
+
+int LED[7] = { 0, 4, 16, 17, 5, 18, 19 };
+String Text = "";
+unsigned long zuvorMillis = 0;
+const long interval = 2000;
+bool Temperaturchecker = false;  // für die LCD ausgabe
+bool Helligkeitschecker = false;
+bool TasterChecker = false;
+bool TextChecker = false;
+
+void setup() {
+  Serial.begin(115200);
+  SerialBT.begin("Andrej ESP32");
+  sensors.begin();
+  lcd.begin(16, 2);
+
+  pinMode(HintergrundBeleuchtung, OUTPUT);
+  for (int i = 0; i < 7; i++)
+    pinMode(LED[i], OUTPUT);
+
+  pinMode(Taster, INPUT_PULLUP);
+  pinMode(LDR, INPUT);
+}
+
+void LedEinzeln(String Text) {
+  for (int i = 0; i < 7; i++) {
+    if (Text.toInt() == i) {
+      digitalWrite(LED[i], !digitalRead(LED[i]));
+    }
+  }
+}
+
+void TemperaturaufLCD(String Text) {
+  if (Text == "TemperaturLcd" || Temperaturchecker) {
+    if(TasterChecker == false && TextChecker == false && Helligkeitschecker == false){
+      if (Text == "TemperaturLcd")
+      Temperaturchecker = !Temperaturchecker;
+      
+      digitalWrite(HintergrundBeleuchtung, Temperaturchecker);
+
+      if (Temperaturchecker) {
+        lcd.setCursor(0, 0);
+        lcd.print("Celsius:");
+
+        sensors.requestTemperatures();
+        float temperatureC = sensors.getTempCByIndex(0);
+        lcd.setCursor(9, 0);
+        lcd.print(temperatureC);
+        lcd.print("\337C");
+      }
+      else 
+      lcd.clear();
+    }
+    else
+    SerialBT.println("Es gab einen Fehler");
+  }
+}
+
+void HelligkeitaufLCD(String Text){
+  if (Text == "HelligkeitLCD" || Helligkeitschecker) {
+    if(TasterChecker == false && TextChecker == false && Temperaturchecker == false){
+      if (Text == "HelligkeitLCD")
+      Helligkeitschecker = !Helligkeitschecker;
+
+        digitalWrite(HintergrundBeleuchtung, Helligkeitschecker);
+        if (Helligkeitschecker) {
+          lcd.setCursor(0, 0);
+          lcd.print("Helligkeit:");
+      
+          int Helligkeit = analogRead(LDR);
+          lcd.setCursor(0, 1);
+          lcd.print(Helligkeit);
+        }
+        else 
+        lcd.clear();
+      }
+    else
+    SerialBT.println("Es gab einen Fehler");
+  }
+}
+
+void TasterStatus(String Text){
+  if (Text == "TasterCheck" || TasterChecker) {
+    if(Helligkeitschecker == false && TextChecker == false && Temperaturchecker == false){
+      if (Text == "TasterCheck")
+      TasterChecker = !TasterChecker;
+
+      digitalWrite(HintergrundBeleuchtung, TasterChecker);
+
+        if (TasterChecker) {
+          lcd.setCursor(0, 0);
+          lcd.print("Taster Status:");
+          
+          int Tasters = digitalRead(Taster);
+          lcd.setCursor(0, 1);
+          lcd.print(Tasters);
+        }
+        else 
+        lcd.clear();
+      }
+    else
+    SerialBT.println("Es gab einen Fehler");
+  }
+}
+
+void Textschreiben(String Text){
+  if (Text == "J") {
+    if(Helligkeitschecker == false && TasterChecker == false && Temperaturchecker == false){
+      TextChecker = !TextChecker;
+      digitalWrite(HintergrundBeleuchtung, !digitalRead(HintergrundBeleuchtung));
+
+        if (TextChecker) {
+          lcd.setCursor(0, 0);
+          lcd.print("Justin ist");
+          lcd.setCursor(0, 1);
+          lcd.print("Komsich");
+        }
+        else 
+        lcd.clear();
+      }
+    else
+    SerialBT.println("Es gab einen Fehler");
+  }
+}
+void alleLedan(String Text){
+  if (Text == "an") {
+    for (int i = 0; i < 7; i++) 
+      digitalWrite(LED[i], !digitalRead(LED[i]));   
+  }
+}
+
+void loop() {
+  unsigned long aktuellMillis = millis();
+
+  if (aktuellMillis - zuvorMillis >= interval) {
+    zuvorMillis = aktuellMillis;
+    SerialBT.println(String(sensors.getTempCByIndex(0)) + "°C");
+  }
+
+  Text = SerialBT.readStringUntil('\n');
+  Text.remove(Text.length() - 1, 1);
+
+  LedEinzeln(Text);
+  Textschreiben(Text);
+  TemperaturaufLCD(Text);
+  TasterStatus(Text);
+  HelligkeitaufLCD(Text);
+  alleLedan(Text);
+}
