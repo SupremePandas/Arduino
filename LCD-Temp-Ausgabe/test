@@ -150,6 +150,7 @@ void loop() {
 
   if (aktuellMillis - zuvorMillis >= interval) {
     zuvorMillis = aktuellMillis;
+    sensors.requestTemperatures();
     SerialBT.println(String(sensors.getTempCByIndex(0)) + "°C");
   }
 
