@@ -127,9 +127,9 @@ void Textschreiben(String Text){
 
         if (TextChecker) {
           lcd.setCursor(0, 0);
-          lcd.print("Justin ist");
+          lcd.print("");
           lcd.setCursor(0, 1);
-          lcd.print("Komsich");
+          lcd.print("");
         }
         else 
         lcd.clear();
