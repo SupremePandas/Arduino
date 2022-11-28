@@ -1,0 +1,51 @@
+/*  Autor: Andrej Stratmann
+    Project: Klausurvorbereitung
+    Funktion: Drei LEDs sollen nach einer bestimmten Frequenz blinken
+    Hardware: • Taster an GPIO13
+              • Gruene LED an GPIO25
+              • Gelbe LED an GPIO33
+              • Rote LED an GPIO27
+*/
+const int Hardware[4] = {13, 27, 33, 25}; 
+bool TasterStatus = false;
+//-------------------------------------------------------------------------------------------------------------------//
+void setup() {
+for(int i = 1; i < 4; i++)
+  pinMode(Hardware[i], OUTPUT);
+  
+pinMode(Hardware[0], INPUT_PULLUP); 
+attachInterrupt(digitalPinToInterrupt(Hardware[0]), Status, FALLING);
+
+// Dies wird nur einmal Ausgegeben im Serielen Monitor
+Serial.begin(115200);                                     // Starten von BAUD 115200
+Serial.println("Das Programm wurde gestartet"); 
+Serial.println("Bitte drücken Sie auf den Taster, um die Frequenzänderung der LEDs zu starten.");
+}
+//-------------------------------------------------------------------------------------------------------------------//
+void Status(){
+  TasterStatus = !TasterStatus; // Der Status ändert sich, zu true oder false wenn der Taster gedrückt wird
+}
+//-------------------------------------------------------------------------------------------------------------------//
+void LedTastergedrueckt(const int Hardware[]){  
+digitalWrite(Hardware[1], LOW);                           // Rote Led aus
+  for(int i = 0; i < 5; i++){                             // 10s das Progamm ablaufen
+    for(int x = 2; x < 4; x++)                            // Grüne/Gelbe Led an oder aus für 2s
+    digitalWrite(Hardware[x], !digitalRead(Hardware[x]));
+    delay(2000);
+  }
+Serial.println("Bitte drücken Sie auf den Taster, um die Frequenzänderung erneut zu starten.");
+}
+//-------------------------------------------------------------------------------------------------------------------//
+void loop() {
+digitalWrite(Hardware[1], HIGH);                         // Rote Led an
+for(int x = 0; x < 2; x++){                              // Grüne/Gelbe Led an oder aus für 200ms
+  for(int i = 2; i < 4; i++)
+    digitalWrite(Hardware[i], !digitalRead(Hardware[i]));
+  delay(200);
+}
+ 
+if (TasterStatus == true){                                // Wenn Bedingung erfüllt, soll sich die Frequenz ändern
+  LedTastergedrueckt(Hardware);
+  TasterStatus = false;
+ }
+}
