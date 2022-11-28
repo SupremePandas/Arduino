@@ -1,5 +1,4 @@
 /*  Autor: Andrej Stratmann
-    Project: Klausurvorbereitung
     Funktion: Drei LEDs sollen nach einer bestimmten Frequenz blinken
     Hardware: • Taster an GPIO13
               • Gruene LED an GPIO25
